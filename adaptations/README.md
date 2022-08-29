@@ -1,0 +1,6 @@
+# Adaptations
+
+This folder contains the code necessary for all text-only adaptations of the vision-and-language models CLIP-BERT, LXMERT and VisualBERT.
+* The adaptations that involve finetuning of VL models in a text-only setting (`no-visual-features-finetuned-LXMERT`, `no-visual-features-finetuned-Wikipedia`) are described in [adaptations/data/runs/finetune/README.md](adaptations/data/runs/finetune/README.md).
+* The adaptations that only require constant visual feature fillers (`avg-visual-features`, `zero-image-visual-features` and `zeroed-visual-features`) are handled in [adaptations/src/generate_visual_features.ipynb](adaptations/src/generate_visual_features.ipynb). The notebook generates the constant visual features for the adaptations.
+* The adaptations that involve finetuning visual features to a text-only setting (`finetuned-LXMERT-visual-features`, `finetuned-Wikipedia-visual-features`) are described in [adaptations/data/runs/finetune-visual-features/README.md](adaptations/data/runs/finetune-visual-features/README.md)
