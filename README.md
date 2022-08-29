@@ -24,6 +24,8 @@ This repo is segmented into five main parts:
 4. [GLUE](GLUE) contains code necessary for the GLUE evaluation performed in the project.
 5. [visual_property_norms](visual_property_norms) contains code necessary for running the Visual Property Norms evaluation.
 
+Parts 4 and 5 essentially make up the results of the paper.
+
 ## Results
 
 <img src="images/results.png" width="800"/>
