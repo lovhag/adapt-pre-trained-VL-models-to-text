@@ -7,6 +7,12 @@ This folder contains all the instructions and code necessary for reproducing the
 * [generate-results.ipynb](generate-results.ipynb) is used to generate the model results on Visual Property Norms found under `data/results/results.csv`. To be able to generate all necessary results you need to have the model weights and adaptations data obtained via [models](models) and [adaptations](adaptations) respectively.
 * [generate-plots.ipynb](generate-plots.ipynb) is used to generate the plots corresponding to the results generated above.
 
+## Reproducing our results
+
+You should be able to reproduce our results completely by running [generate-results.ipynb](generate-results.ipynb). Some slight differences in model scores can occur, while they are in the range of 0.0001 units, so the final plot should be exactly the same as ours. 
+
+Evaluating one model with one adaptation takes approximately 4 minutes (9 mins for LXMERT) on a NVIDIA Tesla A100 GPU with 40GB RAM, so running all of the 29 model and adaptation configurations should take around 2 hours.
+
 ## How to evaluate your own model
 
 A model is evaluated through the following code block in the [generate-results.ipynb](generate-results.ipynb) notebook:

@@ -171,3 +171,4 @@ norms.dat
 results.csv
 visual_property_norms/data/pf-partitions/*.csv
 visual_property_norms/data/queries/template*
+visual_property_norms/data/results/*.csv
