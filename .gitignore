@@ -169,6 +169,8 @@ data/wikipedia/cache
 *mp_rank_00_model_states.pt
 norms.dat
 results.csv
+GLUE/data/cache/
+GLUE/data/logs/
 visual_property_norms/data/pf-partitions/*.csv
 visual_property_norms/data/queries/template*
 visual_property_norms/data/results/*.csv

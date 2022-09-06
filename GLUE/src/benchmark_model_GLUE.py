@@ -387,8 +387,9 @@ def benchmark_on_GLUE_task(model_name: str,
             metrics = trainer.evaluate(eval_dataset=eval_dataset)
             metrics["eval_samples"] = len(eval_dataset)
 
-            trainer.log_metrics("eval", metrics)
-            trainer.save_metrics("eval", metrics)
+            logname = ("_").join([task.replace("-","_"), "eval"])
+            trainer.log_metrics(logname, metrics)
+            trainer.save_metrics(logname, metrics)
             #path = os.path.join(output_dirname, task.replace("-", "_"), "_eval_results.json")
             #with open(path, "w") as f:
             #    json.dump(metrics, f, indent=4, sort_keys=True)
