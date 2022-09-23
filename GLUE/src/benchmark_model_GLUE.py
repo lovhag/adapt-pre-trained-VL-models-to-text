@@ -15,6 +15,7 @@ from transformers import (
     AutoModelForSequenceClassification,
     AutoTokenizer,
     BertConfig,
+    BertTokenizer,
     DataCollatorWithPadding,
     EvalPrediction,
     HfArgumentParser,
@@ -47,6 +48,10 @@ from GLUE.src.modeling_visualbert import (
 from GLUE.src.modeling_clipbert import (
     ClipBertForSequenceClassification, 
     get_clipbert_batch,
+)
+from GLUE.src.modeling_flava import (
+    FlavaForSequenceClassification,
+    FlavaConfigForSequenceClassification
 )
 
 
@@ -238,6 +243,18 @@ def benchmark_on_GLUE_task(model_name: str,
             batch_processor = lambda batch: get_clipbert_batch(batch, visual_feats=None)
 
         multimodal_features_to_skip = ("img_feats")
+    elif model_name_prefix == "flava":
+        config = FlavaConfigForSequenceClassification.from_pretrained(
+            pretrained_model_name_or_path=model_path or model_name,
+            num_labels=num_labels,
+            finetuning_task=task_name,
+            cache_dir=cache_dir
+        )
+        model = FlavaForSequenceClassification.from_pretrained(
+            model_path or model_name,
+            config=config,
+            cache_dir=cache_dir,
+        )
     else:
         config = AutoConfig.from_pretrained(
             pretrained_model_name_or_path=model_path or model_name,
@@ -260,11 +277,14 @@ def benchmark_on_GLUE_task(model_name: str,
         else:
             model.load_state_dict(weights)
 
-    # all models use the same tokenizer
-    tokenizer = AutoTokenizer.from_pretrained(
-        tokenizer_name or model_name or model_path,
-        cache_dir=cache_dir,
-    )
+    # all models use the same tokenizer, except for FLAVA
+    if model_name_prefix == "flava":
+        tokenizer = BertTokenizer.from_pretrained("facebook/flava-full")
+    else:
+        tokenizer = AutoTokenizer.from_pretrained(
+            tokenizer_name or model_name or model_path,
+            cache_dir=cache_dir,
+        )
     if use_imagined_visual_feats:
         preprocess_function = preprocess_function_with_clip
     else: 

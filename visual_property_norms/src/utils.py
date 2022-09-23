@@ -19,6 +19,7 @@ from transformers import (
     BertConfig, 
     CLIPModel, 
     CLIPProcessor, 
+    FlavaForPreTraining,
     VisualBertForPreTraining, 
     VisualBertConfig, 
     LxmertForPreTraining, 
@@ -100,6 +101,8 @@ def get_model_results_per_query_file(query_file, run_config):
             model.lxmert.encoder.load_state_dict(prev_encoder.state_dict())
     elif model_name=="visualbert":
         model = VisualBertForPreTraining.from_pretrained(run_config["model_path"])
+    elif model_name=="flava":
+        model = FlavaForPreTraining.from_pretrained(run_config["model_path"])
     else:
         raise ValueError(f"model_name {model_name} not recognized")
 
@@ -108,7 +111,10 @@ def get_model_results_per_query_file(query_file, run_config):
         model.load_state_dict(torch.load(run_config["model_weights_path"], map_location="cpu")["module"], strict=False)
 
     model.eval()
-    tokenizer = BertTokenizer.from_pretrained("bert-base-uncased")
+    if model_name=="flava":
+        tokenizer = BertTokenizer.from_pretrained("facebook/flava-full")
+    else:
+        tokenizer = BertTokenizer.from_pretrained("bert-base-uncased")
 
     # load potential given features
     if run_config["visual_features_path"] is not None:
@@ -139,6 +145,12 @@ def get_model_results_per_query_file(query_file, run_config):
         pred = get_lxmert_preds_for_questions(questions, model, tokenizer, run_config["batch_size"], visual_features, visual_boxes)
     elif model_name=="visualbert":
         pred = get_visualbert_preds_for_questions(questions, model, tokenizer, run_config["batch_size"], visual_features)
+    elif model_name=="flava":
+        if "input_feats" in run_config:
+            assert "output_feats" in run_config, "If 'input_feats' are defined for FLAVA, 'output_feats' should be as well."
+            pred = get_flava_preds_for_questions(questions, model, tokenizer, run_config["batch_size"], run_config["input_feats"], run_config["output_feats"])
+        else:
+            pred = get_flava_preds_for_questions(questions, model, tokenizer, run_config["batch_size"])
 
     # evaluate model predictions
     scores = get_map_score_for_preds(labels, pred.cpu().detach().numpy(), tokenizer)
@@ -314,6 +326,32 @@ def get_visualbert_preds_for_questions(questions, model, tokenizer, batch_size=6
                 )
 
             outputs = model(**inputs)["logits"] if "logits" in model(**inputs) else model(**inputs)["prediction_logits"]
+            pred = outputs.gather(1, mask_idx.repeat(1, outputs.shape[-1]).unsqueeze(1)).squeeze(1)
+            preds.append(pred)
+
+    preds = torch.cat(preds)
+    return preds
+
+def get_flava_preds_for_questions(questions, model, tokenizer, batch_size, input_feats="input_ids", output_feats="mlm_logits"):
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    model = model.to(device)
+    dataloader = DataLoader(questions, batch_size=batch_size, shuffle=False)
+
+    with torch.no_grad():
+        preds = []
+        for questions_batch in iter(dataloader):
+            inputs = tokenizer(questions_batch, return_tensors="pt", padding="max_length", max_length=77).to(device)
+            mask_idx = (inputs.input_ids == tokenizer.mask_token_id).nonzero(as_tuple=False)[:, 1][:, None]
+            assert len(mask_idx) == inputs.input_ids.shape[0], "ERROR: Found multiple [MASK] tokens per example"
+
+            if input_feats=="input_ids":
+                assert "input_ids" in inputs
+            elif input_feats=="input_ids_masked":
+                inputs["input_ids_masked"] = inputs.pop("input_ids")
+            else:
+                raise ValueError(f"Did not recognize input_feats configuration '{input_feats}'")
+
+            outputs = model(**inputs)[output_feats]
             pred = outputs.gather(1, mask_idx.repeat(1, outputs.shape[-1]).unsqueeze(1)).squeeze(1)
             preds.append(pred)
 
