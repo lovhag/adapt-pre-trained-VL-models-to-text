@@ -1,6 +1,6 @@
 # Adapt Pre-trained Vision-and-Language Models to a Text-only Input
 
-This repo contains the code for the COLING 2022 paper "How to Adapt Pre-trained Vision-and-Language Models to a Text-only Input?" (TBD: add link to paper).
+This repo contains the code for the COLING 2022 paper [How to Adapt Pre-trained Vision-and-Language Models to a Text-only Input?](https://aclanthology.org/2022.coling-1.494.pdf).
 
 <img src="images/overview.png" width="400"/>
 
